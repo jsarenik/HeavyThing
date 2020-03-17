@@ -24,3 +24,7 @@ util/make_dh_static
 util/mersenneprimetest
 webslap/webslap
 webslap/webslap_tlsmin
+examples/hello_world_c1/hello
+examples/simplechat_c++/simplechat
+examples/simplechat_ssh_auth_c++/simplechat_ssh
+examples/simplechat_ssh_c++/simplechat_ssh
