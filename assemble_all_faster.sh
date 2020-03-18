@@ -1,83 +1,66 @@
-#!/bin/bash
-echo "Assembling all HeavyThing v1.24 binaries using fasmpp..."
-echo
-echo "fasmpp..."
-cd fasmpp
-fasm -m 524288 fasmpp.asm && ld -o fasmpp fasmpp.o
-cd ..
-for p in {dhtool,hnwatch,rwasa,sshtalk,toplip,webslap}; do
-	echo
-	echo "$p..."
-	cd $p
-	../fasmpp/fasmpp $p.asm >$p.tmp.asm
-	fasm -m 524288 $p.tmp.asm && ld -o $p $p.tmp.o
-	rm -f $p.tmp.asm
-	cd ..
+#!/bin/sh
+
+a="/$0"; a=${a%/*}; a=${a:-.}; a=${a#/}/; BINDIR=$(cd $a; pwd)
+PATH=$BINDIR/fasmpp:$PATH
+
+assembleo() {
+  test -r "$1.o" && return
+  echo; echo "$1..." && fasm -m 524288 $1.asm
+}
+
+assemble() {
+  F=$1
+  test -x "$1" && return
+  test -r "$1.tmp.asm" && F="$1.tmp"
+  assembleo $F $1 && ld -o $1 $F.o && rm $F.o
+}
+
+preandasm() {
+  test -x "$1" && return
+  test -r "$1.tmp.asm" && rm "$1"
+  fasmpp $1.asm >$1.tmp.asm
+  assemble $1
+  rm -f $1.tmp.asm
+}
+
+echo "=== Assembling all HeavyThing v1.24 binaries using fasmpp..."
+assemble fasmpp/fasmpp
+
+for p in dhtool hnwatch rwasa sshtalk toplip webslap; do
+	preandasm $p/$p
 done
-cd webslap
-echo
-echo "webslap_tlsmin..."
-../fasmpp/fasmpp webslap_tlsmin.asm > webslap_tlsmin.tmp.asm
-fasm -m 524288 webslap_tlsmin.tmp.asm && ld -o webslap_tlsmin webslap_tlsmin.tmp.o
-rm -f webslap_tlsmin.tmp.asm
-cd ..
-cd rwasa
-echo
-echo "rwasa_tlsmin..."
-../fasmpp/fasmpp rwasa_tlsmin.asm > rwasa_tlsmin.tmp.asm
-fasm -m 524288 rwasa_tlsmin.tmp.asm && ld -o rwasa_tlsmin rwasa_tlsmin.tmp.o
-rm -f rwasa_tlsmin.tmp.asm
-cd ..
-cd util
-for p in {bigint_tune,make_dh_static,mersenneprimetest}; do
-	echo
-	echo "util/$p..."
-	../fasmpp/fasmpp $p.asm > $p.tmp.asm
-	fasm -m 524288 $p.tmp.asm && ld -o $p $p.tmp.o
-	rm -f $p.tmp.asm
+preandasm webslap/webslap_tlsmin
+preandasm rwasa/rwasa_tlsmin
+for p in bigint_tune make_dh_static mersenneprimetest; do
+        preandasm util/$p
 done
-cd ..
-cd examples
-for p in {echo,hello_world,libsodium,minigzip,multicore_echo,sha256,sha3,simple_socket,sshecho,tlsecho,tuieffects,tuimatrix}; do
-	echo
-	echo "examples/$p..."
-	cd $p
-	../../fasmpp/fasmpp $p.asm > $p.tmp.asm
-	fasm -m 524288 $p.tmp.asm && ld -o $p $p.tmp.o
-	rm -f $p.tmp.asm
-	cd ..
+for p in echo hello_world libsodium minigzip multicore_echo sha256 sha3 simple_socket sshecho tlsecho tuieffects tuimatrix; do
+	preandasm examples/$p/$p
 done
+
+mygcc() {
+  test -x "$1" && return
+  gcc -no-pie -nostdlib -o $1 $1.c ${1%/*}/ht.o
+}
+mygpp() {
+  test -x "$1" && return
+  g++ -no-pie -std=c++11 -o $1 $1.cpp ${1%/*}/ht.o
+}
+
 # our C/C++ examples
 # these ones can't make use of fasmpp without modifying the wrappers
 echo
-echo "C/C++ Integration and Mixing, examples/hello_world_c1..."
-cd hello_world_c1
-fasm -m 524288 ht.asm
-gcc -no-pie -nostdlib -o hello hello.c ht.o
-cd ..
-cd hello_world_c2
-echo
-echo "C/C++ Integration and Mixing, examples/hello_world_c2..."
-fasm -m 524288 ht.asm
-gcc -no-pie -nostdlib -o hello hello.c ht.o
-cd ..
-echo
-echo "C/C++ Integration and Mixing, examples/simplechat_c++..."
-cd simplechat_c++
-fasm -m 524288 ht.asm
-g++ -no-pie -std=c++11 -o simplechat simplechat.cpp ht.o
-cd ..
-echo
-echo "C/C++ Integration and Mixing, examples/simplechat_ssh_auth_c++..."
-cd simplechat_ssh_auth_c++
-fasm -m 524288 ht.asm
-g++ -no-pie -std=c++11 -o simplechat_ssh simplechat_ssh.cpp ht.o
-cd ..
-echo
-echo "C/C++ Integration and Mixing, examples/simplechat_ssh_c++..."
-cd simplechat_ssh_c++
-fasm -m 524288 ht.asm
-g++ -no-pie -std=c++11 -o simplechat_ssh simplechat_ssh.cpp ht.o
-cd ..
-echo
+echo "== C/C++ Integration and Mixing"
+for p in \
+  hello_world_c1/hello \
+  hello_world_c2/hello \
+  simplechat_c++/simplechat \
+  simplechat_ssh_auth_c++/simplechat_ssh \
+  simplechat_ssh_c++/simplechat_ssh
+do
+  assembleo examples/${p%/*}/ht
+  test -r examples/$p.c && mygcc examples/$p
+  test -r examples/$p.cpp && mygpp examples/$p
+done
+
 echo "Done."
