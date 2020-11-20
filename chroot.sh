@@ -3,13 +3,16 @@
 a="/$0"; a=${a%/*}; a=${a:-.}; a=${a#/}/; BINDIR=$(cd $a; pwd)
 a="/$PWD/"; a=${a%/*}; a=${a:-.}; a=${a#/}/; CURDIR=$(cd $a; pwd)
 BIN=${1:-"${CURDIR##*/}"}
+CHROOT=$CURDIR/chroot-$BIN
 
-mkdir -p chroot/etc/ssh chroot/proc
-cp $BIN chroot
-test -r chroot/etc/ssh/ssh_host_rsa_key || $BINDIR/genkey.sh
-exec unshare -U -m -p --fork -r --propagation slave sh -c "
-  trap 'killall $BIN' QUIT INT
-  mount -t proc proc chroot/proc
-  chroot ./chroot /$BIN
-  umount chroot/proc
+genkey() {
+  ssh-keygen -t rsa -m PEM -N '' -f $CHROOT/etc/ssh/ssh_host_rsa_key
+}
+
+mkdir -p $CHROOT/etc/ssh $CHROOT/proc
+cp $BIN $CHROOT
+test -r $CHROOT/etc/ssh/ssh_host_rsa_key || genkey
+exec unshare -U -m -p --fork -r --propagation slave sh -xc "
+  mount -t proc proc $CHROOT/proc
+  chroot $CHROOT /$BIN
 "
