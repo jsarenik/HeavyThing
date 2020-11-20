@@ -1,0 +1,6 @@
+Run the sshecho with either just `../../chroot.sh`
+or `../../chroot.sh sshecho`
+
+Then in another terminal do this:
+
+    echo test | ssh localhost -p 8001
