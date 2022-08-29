@@ -16,7 +16,7 @@ mkdir -p $CHROOT/etc/ssh $CHROOT/proc
 cp $BIN $CHROOT
 genkey dsa
 genkey rsa
-exec unshare -U -m -p --fork -r --propagation slave sh -xc "
-  mount -t proc proc $CHROOT/proc
-  chroot $CHROOT /$BIN
+unshare -U -m -p --fork -r sh -xc "
+  mount -t proc proc $CHROOT/proc;
+  exec chroot $CHROOT /$BIN;
 "
