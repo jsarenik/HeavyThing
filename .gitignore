@@ -1,4 +1,5 @@
 *.o
+chroot-*
 dhtool/dhtool
 examples/echo/echo
 examples/hello_world/hello_world
