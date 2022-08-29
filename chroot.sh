@@ -1,7 +1,7 @@
 #!/bin/sh
 
-a="/$0"; a=${a%/*}; a=${a:-.}; a=${a#/}/; BINDIR=$(cd $a; pwd)
-a="/$PWD/"; a=${a%/*}; a=${a:-.}; a=${a#/}/; CURDIR=$(cd $a; pwd)
+a="/$0"; a="${a%/*}"; a="${a:-.}"; a="${a#/}/"; BINDIR="$(cd $a; pwd)"
+a="/$PWD/"; a="${a%/*}"; a="${a:-.}"; a="${a#/}/"; CURDIR="$(cd $a; pwd)"
 BIN=${1:-"${CURDIR##*/}"}
 CHROOT=$CURDIR/chroot-$BIN
 
