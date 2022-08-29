@@ -802,6 +802,7 @@ end if
 
 sockaddr_in_size = 16
 sockaddr_un_size = 110
+sockaddr_in6_size = 128
 
 if used unix_addr | defined include_everything
 	; two args: destination buffer in rdi, string in rsi
@@ -828,7 +829,7 @@ inaddr_any:
 	mov	[rdi], rdx
 	mov	[rdi+8], rdx
 	mov	eax, esi
-	mov	word [rdi], 2		; AF_INET/PF_INET
+	mov	word [rdi], 10		; AF_INET6/PF_INET6
 	mov	byte [rdi+2], ah
 	mov	byte [rdi+3], al	; htons(port)
 	mov	dword [rdi+4], 0	; INADDR_ANY
@@ -904,7 +905,7 @@ inet_addr:
 
 	mov	rdi, [rsp]
 	mov	rdx, [rsp+16]
-	mov	word [rdi], 2		; AF_INET/PF_INET
+	mov	word [rdi], 10		; AF_INET6/PF_INET6
 	mov	byte [rdi+2], dh
 	mov	byte [rdi+3], dl	; htons(port)
 	mov	eax, 1
@@ -1023,7 +1024,7 @@ falign
 socket$tcp:
 	prolog	socket$tcp
 	mov	eax, syscall_socket
-	mov	edi, 2		; AF_INET
+	mov	edi, 10		; AF_INET6
 	mov	esi, 1		; SOCK_STREAM
 	xor	edx, edx	; protocol
 	syscall
@@ -1037,7 +1038,7 @@ falign
 socket$udp:
 	prolog	socket$udp
 	mov	eax, syscall_socket
-	mov	edi, 2		; AF_INET
+	mov	edi, 10		; AF_INET6
 	mov	esi, 2		; SOCK_DGRAM
 	xor	edx, edx	; protocol
 	syscall
@@ -2459,7 +2460,7 @@ calign
 	mov	rax, [rdx+epoll_other_ofs]	; our port
 	mov	rcx, [rsp+8]		; our network byte order host
 	xchg	ah,al
-	mov	word [rdi], 2		; AF_INET/PF_INET
+	mov	word [rdi], 10		; AF_INET6/PF_INET6
 	mov	word [rdi+2], ax	; htons(port)
 	mov	dword [rdi+4], ecx
 	mov	esi, sockaddr_in_size
@@ -3386,7 +3387,7 @@ calign
 	mov	eax, syscall_accept4
 	mov 	rdi, [rsp+16]			; the fd
 	mov	rsi, rsp
-	add	rsi, 32				; the address space
+	add	rsi, 128			; the address space
 	mov	rdx, rsp
 	add	rdx, 24
 	mov	qword [rdx], 110
