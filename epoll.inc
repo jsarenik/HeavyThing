@@ -2448,12 +2448,12 @@ calign
 .success:
 	; despite these being local labels, they are called as normal functions by the dns layer
 	; rdi == our original hostname, rsi == our epoll vmethod object, and edx == our network byte order host
-	sub	rsp, 16 + sockaddr_in_size
+	sub	rsp, 16 + sockaddr_in6_size
 	mov	[rsp], rsi
 	mov	[rsp+8], rdx
 	lea	rdi, [rsp+16]
 	xor	esi, esi
-	mov	edx, sockaddr_in_size
+	mov	edx, sockaddr_in6_size
 	call	memset32
 	lea	rdi, [rsp+16]		; our sockaddr_in address
 	mov	rdx, [rsp]		; our epoll vmethod object
@@ -2463,9 +2463,9 @@ calign
 	mov	word [rdi], 10		; AF_INET6/PF_INET6
 	mov	word [rdi+2], ax	; htons(port)
 	mov	dword [rdi+4], ecx
-	mov	esi, sockaddr_in_size
+	mov	esi, sockaddr_in6_size
 	call	epoll$outbound
-	add	rsp, 16 + sockaddr_in_size
+	add	rsp, 16 + sockaddr_in6_size
 	ret
 calign
 .failure:

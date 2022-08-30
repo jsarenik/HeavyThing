@@ -262,12 +262,12 @@ calign
 	mov	[rax+io_parent_ofs], r12	; epoll layer parent == ssh layer
 
 	; setup our tcp goods
-	sub	rsp, sockaddr_in_size
+	sub	rsp, sockaddr_in6_size
 	mov	rdi, rsp
 	mov	esi, 4001
 	call	inaddr_any
 	mov	rdi, rsp
-	mov	esi, sockaddr_in_size
+	mov	esi, sockaddr_in6_size
 	mov	rdx, rbx			; top of the io chain is fine, epoll walks it
 	call	epoll$inbound
 
