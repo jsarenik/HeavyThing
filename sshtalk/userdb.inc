@@ -551,8 +551,8 @@ calign
 	xor	eax, eax
 	pop	r13 r12 rbx
 	epilog
-cleartext .hostname_2ton, '2ton'
-cleartext .hostname_cdev, 'cdev'
+cleartext .hostname_2ton, 'singer'
+cleartext .hostname_cdev, 'lomidrevo'
 cleartext .sysop, '@Sysop'
 calign
 .error:
