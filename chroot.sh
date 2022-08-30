@@ -12,6 +12,7 @@ genkey() {
   ssh-keygen -t "$type" -m PEM -N '' -f $CHROOT/etc/ssh/ssh_host_${type}_key
 }
 
+trap "pkill -9 $BIN" SIGINT SIGQUIT
 mkdir -p $CHROOT/etc/ssh $CHROOT/proc
 cp $BIN $CHROOT
 genkey dsa
